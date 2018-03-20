@@ -19,7 +19,7 @@ app.set('port', port);
  */
 
 var server = http.createServer(app);
-ws.init(2525);
+ws.init(server);
 ws.onconnection();
 
 
