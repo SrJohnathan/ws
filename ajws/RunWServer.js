@@ -14,7 +14,7 @@ var webs;
 
  module.exports.init = function (port) {
 
-        webs = new WS.Server({port});
+        webs = new WS.Server({server:port});
 
         console.log("start");
 
@@ -26,7 +26,7 @@ var webs;
 
             const ip = req.connection.remoteAddress;
             
-            console.log(ip);
+            
 
             so.on('message', function (message) {
 
