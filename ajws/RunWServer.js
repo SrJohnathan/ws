@@ -21,6 +21,8 @@ var webs;
     };
 
   module.exports.onconnection = function() {
+	  
+	  console.log("oncennection");
       
         webs.on('connection', function (so, req) {
 
