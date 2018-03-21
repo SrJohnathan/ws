@@ -14,7 +14,7 @@ var webs;
 
  module.exports.init = function (port) {
 
-        webs = new WS.Server(port);
+        webs = new WS.Server({server:port});
 
         console.log("start");
 
