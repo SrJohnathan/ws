@@ -10,9 +10,10 @@ class RunWSClient{
     
     constructor(wshost){
         
-      /*  this.ws = new WebSocket(){
+       this.ws = new WebSocket(wshost,"xmpp");
+        
             
-        };*/
+        
         
     }
     

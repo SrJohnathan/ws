@@ -8,11 +8,19 @@ var express = require('express');
 //var wss = require('seckets');
 var router = express.Router();
 
+var xmppser = require('../xmpp/server');
+
+
+
+
+
 
 router.get('/', function(req, res, next) {
   res.render('login');
   
   
+  
+ 
   
   //wss.createSocketServe(8080);
   

@@ -1,16 +1,21 @@
 {
-    "name": "ws",
-    "version": "1.0.0",
-    "keywords": ["util", "functional", "server", "client", "browser"],
-    "author": "Johnathan",
-    "contributors": [],
-    "scripts": {
+  "name": "ws",
+  "version": "1.0.0",
+  "keywords": [
+    "util",
+    "functional",
+    "server",
+    "client",
+    "browser"
+  ],
+  "author": "Johnathan",
+  "contributors": [],
+  "scripts": {
     "start": "node bin/www"
   },
-    
-    
-    "dependencies": {
+  "dependencies": {
     "@google/maps": "^0.4.5",
+    "@xmpp/plugins": "^0.3.0",
     "body-parser": "~1.18.2",
     "cookie-parser": "~1.4.3",
     "debug": "~2.6.9",
@@ -20,12 +25,15 @@
     "firebase": "^4.7.0",
     "hbs": "~4.0.1",
     "jade": "~1.11.0",
+    "mongoose": "~5.0.10",
     "morgan": "~1.9.0",
+    "mosca": "^2.8.0",
     "mysql": "^2.15.0",
     "mysql-wrapper": "^0.1.1",
+    "node-xmpp": "^1.1.0",
+    "node-xmpp-server": "^2.2.7",
     "serve-favicon": "~2.4.5",
     "socket.io": "^2.0.4",
-    "mongoose":"~5.0.10",
     "ws": "^4.0.0"
   },
   "optionalDependencies": {
