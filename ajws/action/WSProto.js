@@ -33,7 +33,7 @@ class WSProto {
 
                 var json = JSON.parse(message);
 
-
+				console.log("datas :" + json);
                 if (json.method === "open" && json.key === '5895689569855698') {
 
                     if (obj.length > 0) {
@@ -50,6 +50,7 @@ class WSProto {
                         if (existe === false) {
 
                             console.log("add :" + json.id);
+							
                             obj.push({socket: so, id: json.id});
 
                             var datas = {to: json.id, id: "system", value: 'data', status: "ONLI"}
