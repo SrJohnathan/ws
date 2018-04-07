@@ -33,7 +33,9 @@ class WSProto {
 
                 var json = JSON.parse(message);
 
-				console.log("datas :" + json);
+				console.log("datas :" + message);
+				
+				
                 if (json.method === "open" && json.key === '5895689569855698') {
 
                     if (obj.length > 0) {
