@@ -170,8 +170,11 @@ class WSProto {
 
                             var datas = json;
 
-                            sok.send(JSON.stringify(datas));
-                            return;
+							if(sok.readyState === WS.OPEN){
+								 sok.send(JSON.stringify(datas));
+							}
+                           
+                            
                         }
 
                     }
