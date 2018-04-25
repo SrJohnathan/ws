@@ -23,7 +23,7 @@
     "express-json": "^1.0.0",
     "firebase": "^4.7.0",
     "hbs": "~4.0.1",
-    "mongoose": "~5.0.10",
+    "mongoose": "~5.0.16",
     "morgan": "~1.9.0",
     "mosca": "^2.8.0",
     "node-xmpp": "^1.1.0",
