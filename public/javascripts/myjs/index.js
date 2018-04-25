@@ -13,7 +13,7 @@ $('#webso').load("/html/websok.html");
 var uuid = "locahostAd";
 
 
-var wss = new WebSocket("wss://barbaridade.herokuapp.com");
+var wss = new WebSocket("ws://localhost:5000");
 
 wss.onopen = function (ev) {
     

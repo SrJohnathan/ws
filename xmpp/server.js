@@ -7,145 +7,139 @@
 
 'use strict';
 
-var xmpp = require('node-xmpp-server'), server = null;
-var press = require('@xmpp/xml');
-
+var xmpp = require('node-xmpp-server'), server = null
+var Stanza = require('node-xmpp-core').Stanza
 var ltx = require('node-xmpp-core').ltx;
-
-var xmp = require('node-xmpp')
-
-var c2s = null;
-var eventChain = [];
-
-module.exports.start = function () {
-
-    c2s = new xmp.server.C2S.TCPServer({
-        port: 5278,
-        domain: 'localhost'
-    })
-
-    c2s.on('error', function (err) {
-        console.log('c2s error: ' + err.message)
-    })
-
-    c2s.on('connect', function (client) {
-        c2s.on('register', function (opts, cb) {
-            cb(new Error('register not supported'))
-        })
-
-        // allow anything
-        client.on('authenticate', function (opts, cb) {
-            eventChain.push('authenticate')
-
-            console.log(opts);
-            console.log('server:', opts.username, opts.password, 'AUTHENTICATING')
-            if (opts.password === 'secret') {
-                console.log('server:', opts.username, 'AUTH OK')
-                cb(null, opts)
-            } else {
-                console.log('server:', opts.username, 'AUTH FAIL')
-                cb(false)
-            }
-
-        })
-
-        client.on('online', function () {
-            eventChain.push('online')
-        })
-
-        client.on('stanza', function () {
-            eventChain.push('stanza')
-            client.send(
-                    new xmpp.Message({type: 'chat'})
-                    .c('body')
-                    .t('Hello there, little client.')
-                    )
-        })
-
-        client.on('disconnect', function () {
-            eventChain.push('disconnect')
-        })
-
-        client.on('end', function () {
-            eventChain.push('end')
-        })
-
-        client.on('close', function () {
-            eventChain.push('close')
-        })
-
-        client.on('error', function () {
-            eventChain.push('error')
-        })
-    })
-
-};
+var stanzaMethod = require('./Stanza');
 
 
 
-module.exports.startServer = function (done) {
+
+
+const mongo = require("mongoose");
+var Schema = mongo.Schema;
+mongo.connect("mongodb://localhost:27017/ajsoftware");
+
+
+
+var array = [];
+
+module.exports.startServer = function (domain) {
+
     // Sets up the server.
     server = new xmpp.C2S.TCPServer({
-        port: 5225,
-        domain: 'localhost'
+        port: 5222,
+        domain: domain
     });
 
-    // On connection event. When a client connects.
-    server.on('connection', function (client) {
-        // That's the way you add mods to a given server.
-        console.log('CONNECTATE');
-        // Allows the developer to register the jid against anything they want
-        client.on('register', function (opts, cb) {
-            console.log('REGISTER')
-            cb(true)
-        })
 
-        // Allows the developer to authenticate users against anything they want.
+    var data = new Schema({
+
+        client: {}
+
+
+    });
+
+
+    stanzaMethod.db(mongo,data);
+
+    server.on('connection', function (client) {
+
+
+        client.on('register', function (opts, cb) {
+
+
+            var val = {};
+
+            var date = {nome: opts.username, type: 1, plataform: "null", pass: opts.password};
+
+            val[opts.username + "@" + client.serverdomain] = {data: date, pressence: {}, menssage: {},iq:{}};
+
+            mongo.model("xmpp", data).create({client: val});
+
+            cb(true);
+
+
+        });
+
         client.on('authenticate', function (opts, cb) {
-            console.log('server:', opts.username, opts.password, 'AUTHENTICATING')
-            if (opts.password === 'secret') {
-                console.log('server:', opts.username, 'AUTH OK')
-                cb(null, opts)
-            } else {
-                console.log('server:', opts.username, 'AUTH FAIL')
-                cb(false)
-            }
+
+            mongo.model("xmpps", data).find({}, function (err, docs) {
+
+                docs.forEach(function (d) {
+
+                    if (d['client'][opts.username + "@" + client.serverdomain].data.nome === opts.username) {
+
+                        console.log('server:', opts.username, 'AUTH SUCESS');
+
+                        if (d['client'][opts.username + "@" + client.serverdomain].data.pass === opts.password) {
+
+                            cb(null, opts);
+
+                            array.push(client);
+
+                            stanzaMethod.clientes(array);
+                            console.log('server:', 'ARRAY:' + array.length);
+
+
+                        } else {
+
+                            console.log('server:', opts.username, 'AUTH FAIL');
+
+                            cb(false);
+
+                        }
+
+                    } else {
+
+                        cb(false);
+                    }
+                });
+            });
+
+
         })
 
         client.on('online', function () {
-            console.log('server:', client.jid.local, 'ONLINE')
-        })
 
-        // Stanza handling
+
+            console.log('server:', client.jid.local, 'ONLINE');
+            
+            
+            
+
+        });
+
         client.on('stanza', function (stanza) {
-            console.log('server:', client.jid.local, 'stanza', stanza.toString())
-            /* var from = stanza.attrs.from
-             stanza.attrs.from = stanza.attrs.to
-             stanza.attrs.to = from
-             client.send(stanza) */
 
-            if (stanza.is('iq')) {
-                var iq = new xmpp.Element(
-                        'iq',
-                        {to: stanza.attrs.to, type: 'set'})
-                        .c('query', {xmlns: 'http://jabber.org/protocol/muc#owner'})
-                        .c('x', {xmlns: 'jabber:x:data', type: 'submit'})
-                
-                client.send(stanza) 
+            stanzaMethod.iq(stanza, client);
+
+
+        });
+
+
+        client.on('disconnect', function () {
+
+           
+            if (array.length > 0) {
+
+                if (client.jid.local === array[array.indexOf(client)].jid.local) {
+
+                    array.splice(array.indexOf(client), 1);
+                    
+                    stanzaMethod.clientes(array);
+
+                    console.log('server:', 'DISCONNECT:' + client.jid.local);
+                    console.log('server:', 'ARRAY:' + array.length);
+
+                }
             }
 
-
-
-
-        })
-
-        // On Disconnect event. When a client disconnects
-        client.on('disconnect', function () {
-            console.log('server:', client.jid.local, 'DISCONNECT')
-        })
+        });
     })
 
-    server.on('listening', done)
+    //  server.on('listening', done)
+
 
 
 

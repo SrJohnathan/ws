@@ -5,7 +5,9 @@
         <group>
             <file>file:/C:/Users/Johnathan/Documents/NetBeansProjects/ws/public/html/websok.html</file>
             <file>file:/C:/Users/Johnathan/Documents/NetBeansProjects/ws/ajws/action/WSProto.js</file>
+            <file>file:/C:/Users/Johnathan/Documents/NetBeansProjects/ws/xmpp/server.js</file>
             <file>file:/C:/Users/Johnathan/Documents/NetBeansProjects/ws/app.js</file>
+            <file>file:/C:/Users/Johnathan/Documents/NetBeansProjects/ws/xmpp/Stanza.js</file>
             <file>file:/C:/Users/Johnathan/Documents/NetBeansProjects/ws/bin/www</file>
             <file>file:/C:/Users/Johnathan/Documents/NetBeansProjects/ws/routes/login.js</file>
         </group>

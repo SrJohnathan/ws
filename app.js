@@ -3,6 +3,8 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
+
+
 //const Ws = require('ws');
 //const Banco = require('./database/Banco');
 
@@ -26,6 +28,16 @@ var xmpp = require('./xmpp/server');
 var xmp = require('node-xmpp-server');
 var Client = require('node-xmpp-client');
 var Stanza = require('node-xmpp-core').Stanza
+
+var mongo = require('mongoose');
+
+
+
+//var uri = 'mongodb://localhost/xmpp';
+// global.db = mongo.createConnection(uri);
+
+
+
 
 
 
@@ -88,89 +100,8 @@ module.exports.getserver = function (serve) {
 
     var WS = new event(serve);
 
-  /*  xmpp.startServer(function () {
-
-        var client1 = new Client({
-            jid: 'web@localhost',
-            password: '654321'
-        })
-        client1.on('online', function () {
-            console.log('client1: online')
-            
-            
-            client1.send(new xmp.Stanza('message', {to: 'localhost'}).c('body').t('HelloWorld'))
-        })
-        client1.on('stanza', function (stanza) {
-            console.log('client1: stanza', stanza.root().toString())
-        })
-
-    }); */
-
-  //  xmpp.start();
-    /*  xmpp.startServer(function () {
-     var client1 = new Client({
-     websocket: {url: 'ws://localhost:5280'},
-     jid: 'client1@localhost',
-     password: 'secret'
-     })
-     client1.on('online', function (data) {
-     
-     
-     client1.send(new Stanza('message', {to: 'localhost'}).c('body').t('HelloWorld'))
-     })
-     client1.on('stanza', function (stanza) {
-     console.log('client1', 'received stanza', stanza.root().toString())
-     });
-     
-     }); */
-
-}
+    xmpp.startServer("localhost");
+};
 
 
 
-/*
- var wss = new Ws.Server({port: 5050});
- 
- var database = new Banco("localhost", "root", "", "ws");
- 
- 
- 
- wss.on("connection", function connection(so, req) {
- 
- 
- so.on('message', function message(message) {
- 
- 
- 
- });
- 
- 
- so.on('error', function err(err) {
- console.log(err);
- });
- 
- so.on('listening', function listening() {
- 
- });
- });
- 
- 
- function  send(wss,so,message){
- 
- 
- wss.clients.forEach(function each(client) {
- if (client !== so && client.readyState === Ws.OPEN) {
- msg = JSON.parse(message);
- client.send(JSON.stringify({datas:msg}));
- }
- });
- 
- 
- }
- 
- 
- function  seve(){
- 
- 
- 
- } */

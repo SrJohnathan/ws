@@ -33,9 +33,7 @@ class WSProto {
 
                 var json = JSON.parse(message);
 
-				console.log("datas :" + message);
-				
-				
+
                 if (json.method === "open" && json.key === '5895689569855698') {
 
                     if (obj.length > 0) {
@@ -52,7 +50,7 @@ class WSProto {
                         if (existe === false) {
 
                             console.log("add :" + json.id);
-							
+
                             obj.push({socket: so, id: json.id});
 
                             var datas = {to: json.id, id: "system", value: 'data', status: "ONLI"}
@@ -82,7 +80,7 @@ class WSProto {
 
                         } else {
 
-                            console.log("novamente :" + obtmp.id + "nn "+ obj.indexOf(obtmp));
+                            console.log("novamente :" + obtmp.id + "nn " + obj.indexOf(obtmp));
 
                             obj.splice(obj.indexOf(obtmp), 1, {socket: so, id: json.id});
 
@@ -170,26 +168,41 @@ class WSProto {
 
                             var datas = json;
 
-							if(sok.readyState === WS.OPEN){
-								 sok.send(JSON.stringify(datas));
-							}
-                           
-                            
+                            sok.send(JSON.stringify(datas));
+                            return;
                         }
 
                     }
 
 
-                    webs.clients.forEach(function each(client) {
-                        if (client !== so && client.readyState === WS.OPEN) {
+
+                    if (json.method === "pressence" && json.key === '5895689569855698') {
 
 
+                        var to = json.to;
+                        var id = json.id;
+
+                        var fun = json.data.fun;
+
+                        
 
 
+                        for (var i = 0; i < obj.length; i++) {
+                            var sok = obj[i].socket;
+                            var idt = obj[i].id;
+                            if (idt === to) {
+
+                                var datas = {to:id , pressence:"ok"};
+
+                                so.send(JSON.stringify(datas));
+                                
+                                
+                            }
 
                         }
-                    });
 
+
+                    }
 
 
                 }
@@ -198,26 +211,24 @@ class WSProto {
 
             so.on('error', function err(err) {
 
-                console.log(so.readyState);
                 console.log(err);
-                webs.clients.forEach(function each(client) {
-                    if (client === so) {
+                obj.forEach(function each(ob) {
 
-                        obj.forEach(function each(ob) {
+                    if (WS.OPEN !== ob.socket.readyState) {
+                        obj.splice(obj.indexOf(ob), 1);
 
-                            if (client === ob.socket) {
-                                obj.splice(obj.indexOf(ob), 1);
-
-                            }
-
-
-                        });
+                        console.log(ob.id + " saiu");
 
                     }
 
 
-
                 });
+
+
+
+
+
+
 
             }
 
