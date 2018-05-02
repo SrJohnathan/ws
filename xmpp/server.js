@@ -19,7 +19,11 @@ var stanzaMethod = require('./Stanza');
 
 const mongo = require("mongoose");
 var Schema = mongo.Schema;
-mongo.connect("mongodb://localhost:27017/ajsoftware");
+ // mongo.connect("mongodb://localhost:27017/ajsoftware");
+ 
+ mongo.connect("mongodb+srv://johnathan:9569john@ajsoftware-guytn.mongodb.net/", {dbName : 'data'});
+
+// mongodb+srv://johnathan:9569john@ajsoftware-guytn.mongodb.net/data
 
 
 
