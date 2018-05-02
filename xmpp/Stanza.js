@@ -12,7 +12,7 @@ var mongo;
 var datam;
 
 
-
+const xmpp = require('node-xmpp-server');
 
 
 
@@ -20,6 +20,13 @@ var datam;
 module.exports.clientes = function (arrayClinete) {
 
     cliente = arrayClinete;
+
+
+};
+
+module.exports.getclientes = function () {
+
+    return cliente;
 
 
 };
@@ -36,86 +43,234 @@ module.exports.db = function (db, data) {
 
 module.exports.iq = function (value, client) {
 
-    console.log(value);
+
 
 
     if (value.is("iq")) {
 
-        console.log(value);
 
+        var query = null;
         if (value.attrs.type === "get") {
 
+            query = value.getChild('query', "jabber:iq:roster");
 
             mongo.model("xmpps", datam).find({}, function (err, docs) {
 
-                docs.forEach(function (d) {
+                var n = 0;
+                var correr = true;
 
 
-                    if (d['client'][client.jid.local + "@" + client.serverdomain].data.nome === client.jid.local) {
+                while (correr) {
+
+                    var key = Object.keys(docs[0].client[n]);
 
 
-                        var cli = d['client'][client.jid.local + "@" + client.serverdomain];
-                        if (cli.hasOwnProperty("iq")) {
+                    if (key[0] === (client.jid.local + "@" + client.serverdomain)) {
+                        if (docs[0].client[n][client.jid.local + "@" + client.serverdomain].data.nome === client.jid.local) {
 
-                           
-                        } else {
+                            correr = false;
+
+                            var items = docs[0].client[n][client.jid.local + "@" + client.serverdomain].iq
+
                             value.attrs.type = "result";
+
+                            items.push("john@localhost");
+
+                            items.forEach(function (fn) {
+
+                                try {
+                                    query.c("item", {jid: fn});
+                                } catch (error) {
+
+                                }
+
+                            });
+
+
+
+
+
+
+
+                            value.attrs.to = value.attrs.from;
+
+
+
+
                             client.send(value);
-                            
-                            
+
                         }
+
 
 
                     }
 
-                })
+                    n++;
+                }
 
-            }); 
+            });
 
+
+
+        }
+
+
+        if (value.attrs.type === "set" && (query = value.getChild('query', "jabber:iq:roster"))) {
 
            
-        } 
-        
-        
-        if (value.attrs.type === "set") {
-            
-            
-            
+
+            value.attrs.type = "result";
+            mongo.model("xmpps", datam).find({}, function (err, docs) {
+
+                docs[0].client[client.jid.username + "@" + client.serverdomain].iq
+                docs[0].save(function (err) {
+
+                    if (!err) {
+
+                    }
+
+
+
+
+
+                });
+
+
+
+
+
+            });
+
+
+
         }
     }
 
-    if (value.is("presenc")) {
+    if (value.is("presence")) {
 
-        console.log(value);
+        //  var status = value.getChild('status');
 
-        if (value.attrs.type === "get") {
 
-            value.attrs.type = "result";
+        mongo.model("xmpps", datam).find({}, function (err, docs) {
 
-            client.send(value);
-        }
+            var n = 0;
+            var correr = true;
+            while (correr) {
+
+
+                var key = Object.keys(docs[0].client[n]);
+                if (key[0] === (client.jid.local + "@" + client.serverdomain)) {
+                    if (docs[0].client[n][client.jid.local + "@" + client.serverdomain].data.nome === client.jid.local) {
+
+                        correr = false;
+
+                        var items = docs[0].client[n][client.jid.local + "@" + client.serverdomain].iq
+
+                        items.push("johnathan@localhost");
+
+                        items.forEach(function (fn) {
+
+
+                            cliente.forEach(function (cl) {
+
+                                if ((cl.jid.local + "@" + cl.serverdomain) === fn) {
+
+                                    cl.send(new xmpp.Stanza('presence', {from: fn, to: value.attrs.from}));
+
+                                } else {
+
+
+
+                                    console.log(new xmpp.Stanza('presence', {from: fn, type: "unavailable", to: value.attrs.from}));
+
+
+
+                                    cl.send(new xmpp.Stanza('presence', {from: fn, type: "unavailable", to: value.attrs.from}));
+                                }
+
+                            });
+
+
+
+
+
+
+
+
+                        });
+
+
+                    }
+
+                }
+
+                n++;
+            }
+
+        });
+
+
+
+
     }
 
 
     if (value.is("message")) {
 
-
+ console.log(value);
         cliente.forEach(function (cl) {
 
-            if ((cl.jid.local + "@" + cl.serverdomain) === value.attes.to) {
+            if ((cl.jid.local + "@" + cl.serverdomain) === value.attrs.to) {
 
-
-                var stanz = new Stanza('message', {to: value.attrs.to, type: value.attrs.type })
-
-                        .c('body').t(value.attrs.body);
-
-                cl.send(stanz);
+                cl.send(value);
 
 
             }
 
 
         });
+
+
+
+        /*  value.children.forEach(function (fn) {
+         
+         switch (fn.name) {
+         case "composing" :
+         cliente.forEach(function (cl) {
+         
+         if ((cl.jid.local + "@" + cl.serverdomain) === value.attrs.to) {
+         cl.send(value);
+         }
+         });
+         
+         break;
+         
+         case "paused" :
+         
+         cliente.forEach(function (cl) {
+         
+         if ((cl.jid.local + "@" + cl.serverdomain) === value.attrs.to) {
+         cl.send(value);
+         }
+         });
+         
+         break;
+         
+         
+         
+         default:
+         
+         break;
+         }
+         
+         
+         }); */
+
+
+
+
+
+
 
 
 

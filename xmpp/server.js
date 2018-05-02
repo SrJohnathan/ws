@@ -10,6 +10,7 @@
 var xmpp = require('node-xmpp-server'), server = null
 var Stanza = require('node-xmpp-core').Stanza
 var ltx = require('node-xmpp-core').ltx;
+var Plain = xmpp.auth.Plain
 var stanzaMethod = require('./Stanza');
 
 
@@ -26,125 +27,213 @@ var array = [];
 
 module.exports.startServer = function (domain) {
 
-    // Sets up the server.
+// Sets up the server.
     server = new xmpp.C2S.TCPServer({
         port: 5222,
         domain: domain
     });
 
+    if (Plain) {
+
+        server.availableSaslMechanisms = [];
+        server.registerSaslMechanism(Plain);
+    }
 
     var data = new Schema({
 
-        client: {}
+        client: []
 
 
     });
+    var cltmp = mongo.model("xmpps", data);
 
 
-    stanzaMethod.db(mongo,data);
+    data.pre('set', function (next, path, val, typel) {
+        // `this` is the current Document
+        this.emit('set', path, val);
+        next();
+    });
+
+
+
+
+    stanzaMethod.db(mongo, data);
+
 
     server.on('connection', function (client) {
+
 
 
         client.on('register', function (opts, cb) {
 
 
-            var val = {};
 
-            var date = {nome: opts.username, type: 1, plataform: "null", pass: opts.password};
-
-            val[opts.username + "@" + client.serverdomain] = {data: date, pressence: {}, menssage: {},iq:{}};
-
-            mongo.model("xmpp", data).create({client: val});
-
-            cb(true);
+            cltmp.find({}, function (err, docs) {
 
 
+
+                var val = {};
+
+
+                if (docs.length > 0) {
+
+
+
+                    var date = {nome: opts.username, type: 1, plataform: "null", pass: opts.password};
+
+
+                    val[opts.username + "@" + client.serverdomain] = {data: date, pressence: {}, menssage: [], iq: []};
+
+
+                    var post = new cltmp;
+                    docs[0].client.push(val);
+                    docs[0].save(function (err) {
+
+                        if (!err) {
+
+                            console.log("opts");
+                            cb(null);
+                        }
+
+
+
+
+
+                    });
+                } else {
+
+                    var date = {nome: opts.username, type: 1, plataform: "null", pass: opts.password};
+                    val[opts.username + "@" + client.serverdomain] = {data: date, pressence: {}, menssage: [], iq: []};
+                    mongo.model("xmpp", data).create({client: [val]});
+                    cb(null);
+                }
+
+
+
+
+            });
         });
-
         client.on('authenticate', function (opts, cb) {
 
-            mongo.model("xmpps", data).find({}, function (err, docs) {
+            if (opts.saslmech === Plain.id) {
+                mongo.model("xmpps", data).find({}, function (err, docs) {
 
-                docs.forEach(function (d) {
+                    var securite = false;
+                    docs[0].client.forEach(function (d) {
 
-                    if (d['client'][opts.username + "@" + client.serverdomain].data.nome === opts.username) {
+                        if (!securite) {
+                            if (d[Object.keys(d)].data.nome === opts.username && d[Object.keys(d)].data.pass === opts.password) {
 
-                        console.log('server:', opts.username, 'AUTH SUCESS');
-
-                        if (d['client'][opts.username + "@" + client.serverdomain].data.pass === opts.password) {
-
-                            cb(null, opts);
-
-                            array.push(client);
-
-                            stanzaMethod.clientes(array);
-                            console.log('server:', 'ARRAY:' + array.length);
+                                console.log('server:', opts.username, 'AUTH SUCESS' + opts.saslmech + ";;;" + Plain.id);
 
 
-                        } else {
+                                cb(null, opts);
 
-                            console.log('server:', opts.username, 'AUTH FAIL');
+                                securite = true;
 
-                            cb(false);
+
+
+
+                            } else {
+
+
+
+                            }
+
+
 
                         }
 
-                    } else {
 
-                        cb(false);
-                    }
+
+
+
+
+
+
+
+
+                    })
+
+
+
+
                 });
-            });
+
+            }
+
 
 
         })
 
+        client.on('session-started', function () {
+            console.log('server:', client.jid.local, 'SESSION');
+        });
+
+
         client.on('online', function () {
 
 
+
             console.log('server:', client.jid.local, 'ONLINE');
-            
-            
-            
+
+
+
+            if (array.length > 0) {
+
+                var exi = false;
+                array.forEach(function (cl) {
+                    if (cl.jid.local === client.jid.local) {
+
+                        exi = true;
+
+
+                    }
+                });
+
+                if (!exi) {
+                    console.log('server:', client.jid.local, 'ADD');
+                    array.push(client);
+                    stanzaMethod.clientes(array);
+                }
+
+            } else {
+                console.log('server:', client.jid.local, 'ENTER');
+                array.push(client);
+                stanzaMethod.clientes(array);
+            }
+
 
         });
-
         client.on('stanza', function (stanza) {
 
+         
             stanzaMethod.iq(stanza, client);
-
-
         });
 
 
         client.on('disconnect', function () {
 
-           
+
             if (array.length > 0) {
 
-                if (client.jid.local === array[array.indexOf(client)].jid.local) {
+                if (client === array[array.indexOf(client)]) {
 
                     array.splice(array.indexOf(client), 1);
-                    
                     stanzaMethod.clientes(array);
-
                     console.log('server:', 'DISCONNECT:' + client.jid.local);
-                    console.log('server:', 'ARRAY:' + array.length);
 
                 }
             }
 
         });
-    })
-
-    //  server.on('listening', done)
+        //  server.on('listening', done)
 
 
 
 
 
-}
-
+    });
+};
 
 
