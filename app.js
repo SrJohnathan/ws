@@ -100,7 +100,7 @@ module.exports.getserver = function (serve) {
 
   //  var WS = new event(serve);
 
-    xmpp.startServer("localhost");
+    xmpp.startServer("barbaridade.herokuapp.com");
 };
 
 
