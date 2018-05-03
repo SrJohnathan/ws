@@ -98,7 +98,7 @@ module.exports = app;
 
 module.exports.getserver = function (serve) {
 
-    var WS = new event(serve);
+  //  var WS = new event(serve);
 
     xmpp.startServer("localhost");
 };

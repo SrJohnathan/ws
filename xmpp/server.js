@@ -21,7 +21,7 @@ const mongo = require("mongoose");
 var Schema = mongo.Schema;
  // mongo.connect("mongodb://localhost:27017/ajsoftware");
  
- mongo.connect("mongodb+srv://johnathan:9569john@ajsoftware-guytn.mongodb.net/", {dbName : 'data'});
+ mongo.connect("mongodb://johnathan:9569john@ds113200.mlab.com:13200/ajsoftware");
 
 // mongodb+srv://johnathan:9569john@ajsoftware-guytn.mongodb.net/data
 
